@@ -1,188 +1,86 @@
-'use client';
+import Link from 'next/link';
 
-import { useEffect, useState } from 'react';
-import { User, Build } from '@/types';
-import BuildCard from '@/components/BuildCard';
-import AuthModal from '@/components/AuthModal';
-import CreateBuildModal from '@/components/CreateBuildModal';
-import { Star, Plus, LogOut, User as UserIcon } from 'lucide-react';
-
-export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [builds, setBuilds] = useState<Build[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-
-  useEffect(() => {
-    fetchCurrentUser();
-    fetchBuilds();
-  }, []);
-
-  const fetchCurrentUser = async () => {
-    try {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      }
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-    }
-  };
-
-  const fetchBuilds = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/builds');
-      const data = await res.json();
-      setBuilds(data.builds);
-    } catch (error) {
-      console.error('Failed to fetch builds:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  const handleAuthSuccess = (newUser: User) => {
-    setUser(newUser);
-    setShowAuthModal(false);
-  };
-
-  const handleBuildCreated = () => {
-    setShowCreateModal(false);
-    fetchBuilds();
-  };
-
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Star className="w-8 h-8 text-blue-600" fill="currentColor" />
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-500 rounded-lg"></div>
               <h1 className="text-2xl font-bold text-gray-900">Nullshot Builds</h1>
             </div>
-
-            <div className="flex items-center gap-4">
-              {user ? (
-                <>
-                  <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Share Build
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-                      <UserIcon className="w-5 h-5 text-gray-600" />
-                      <span className="text-sm font-medium text-gray-900">{user.username}</span>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Logout"
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setAuthMode('login');
-                      setShowAuthModal(true);
-                    }}
-                    className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setShowAuthModal(true);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              )}
-            </div>
+            <nav className="flex items-center space-x-6">
+              <Link href="/feed" className="text-gray-700 hover:text-gray-900 font-medium">
+                Feed
+              </Link>
+              <Link href="/trending" className="text-gray-700 hover:text-gray-900 font-medium">
+                Trending
+              </Link>
+              <Link href="/login" className="text-gray-700 hover:text-gray-900 font-medium">
+                Login
+              </Link>
+              <Link href="/signup" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-medium">
+                Sign Up
+              </Link>
+            </nav>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Community Builds</h2>
-          <p className="text-gray-600">
-            Discover amazing projects built with Nullshot. Share your builds, get inspired, and learn from the community.
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center">
+          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+            Share Your Nullshot Builds
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Showcase your projects, get feedback, and discover amazing builds from the Nullshot community
           </p>
+          <div className="flex justify-center space-x-4">
+            <Link href="/signup" className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-semibold text-lg">
+              Get Started
+            </Link>
+            <Link href="/feed" className="bg-white text-purple-600 px-8 py-3 rounded-lg border-2 border-purple-600 hover:bg-purple-50 font-semibold text-lg">
+              Explore Builds
+            </Link>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        {/* Features */}
+        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Share Videos & Demos</h3>
+            <p className="text-gray-600">Upload videos and embed live previews of your builds</p>
           </div>
-        ) : builds.length === 0 ? (
-          <div className="text-center py-20">
-            <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No builds yet</h3>
-            <p className="text-gray-600 mb-6">Be the first to share your Nullshot build!</p>
-            {user && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Share Your Build
-              </button>
-            )}
+
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Star & Comment</h3>
+            <p className="text-gray-600">Engage with the community through stars and comments</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {builds.map((build) => (
-              <BuildCard
-                key={build.id}
-                build={build}
-                currentUser={user}
-                onUpdate={fetchBuilds}
-              />
-            ))}
+
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Build Your Profile</h3>
+            <p className="text-gray-600">Showcase all your projects in one place</p>
           </div>
-        )}
+        </div>
       </main>
-
-      {/* Modals */}
-      {showAuthModal && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setShowAuthModal(false)}
-          onSuccess={handleAuthSuccess}
-          onSwitchMode={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-        />
-      )}
-
-      {showCreateModal && user && (
-        <CreateBuildModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={handleBuildCreated}
-        />
-      )}
     </div>
   );
 }
