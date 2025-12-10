@@ -1,10 +1,10 @@
 export interface User {
   id: string;
   email: string;
+  password: string;
   username: string;
-  name: string;
-  bio?: string;
-  avatar?: string;
+  avatar: string | null;
+  bio: string | null;
   createdAt: Date;
 }
 
@@ -14,21 +14,11 @@ export interface Build {
   title: string;
   description: string;
   images: string[];
-  videoUrl?: string;
-  websiteUrl?: string;
-  codeSnippets?: CodeSnippet[];
-  tags: string[];
-  stars: number;
-  views: number;
+  videoUrl: string | null;
+  websiteUrl: string | null;
+  codeSnippet: string | null;
   createdAt: Date;
   updatedAt: Date;
-  user?: User;
-}
-
-export interface CodeSnippet {
-  language: string;
-  code: string;
-  filename?: string;
 }
 
 export interface Comment {
@@ -37,7 +27,6 @@ export interface Comment {
   userId: string;
   content: string;
   createdAt: Date;
-  user?: User;
 }
 
 export interface Star {
@@ -49,12 +38,19 @@ export interface Star {
 
 export interface Report {
   id: string;
-  buildId?: string;
-  commentId?: string;
+  buildId: string;
   userId: string;
   reason: string;
-  description: string;
-  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  description: string | null;
+  status: 'pending' | 'reviewed' | 'resolved';
   createdAt: Date;
+}
+
+export interface Database {
+  users: User[];
+  builds: Build[];
+  comments: Comment[];
+  stars: Star[];
+  reports: Report[];
 }
 

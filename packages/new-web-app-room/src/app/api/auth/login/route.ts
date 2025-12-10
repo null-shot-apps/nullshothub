@@ -11,10 +11,19 @@ const loginSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const data = loginSchema.parse(body);
+    const result = loginSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: result.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { email, password } = result.data;
 
     // Find user
-    const user = await getUserByEmail(data.email);
+    const user = await getUserByEmail(email);
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -23,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValid = await comparePassword(data.password, user.password);
+    const isValid = await comparePassword(password, user.password);
     if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -31,27 +40,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      username: user.username,
+    // Generate token and set cookie
+    const token = generateToken(user.id);
+    const response = NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+        bio: user.bio,
+      },
     });
+    setAuthCookie(response, token);
 
-    // Set cookie
-    await setAuthCookie(token);
-
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-    return NextResponse.json({ user: userWithoutPassword });
+    return response;
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

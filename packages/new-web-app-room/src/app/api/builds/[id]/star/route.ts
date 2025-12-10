@@ -1,41 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBuildById, deleteBuild } from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
+import { addStar, removeStar, hasUserStarred, getBuildById } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
-export async function GET(
+export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const build = await getBuildById(id);
-
-    if (!build) {
+    const userId = getCurrentUserId(request);
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Build not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ build });
-  } catch (error) {
-    console.error('Get build error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -50,18 +25,60 @@ export async function DELETE(
       );
     }
 
-    if (build.userId !== currentUser.userId) {
+    const isStarred = await hasUserStarred(id, userId);
+    if (isStarred) {
       return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
+        { error: 'Already starred' },
+        { status: 400 }
       );
     }
 
-    await deleteBuild(id);
-
+    await addStar(id, userId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Delete build error:', error);
+    console.error('Star build error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = getCurrentUserId(request);
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const build = await getBuildById(id);
+
+    if (!build) {
+      return NextResponse.json(
+        { error: 'Build not found' },
+        { status: 404 }
+      );
+    }
+
+    const isStarred = await hasUserStarred(id, userId);
+    if (!isStarred) {
+      return NextResponse.json(
+        { error: 'Not starred' },
+        { status: 400 }
+      );
+    }
+
+    await removeStar(id, userId);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Unstar build error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
