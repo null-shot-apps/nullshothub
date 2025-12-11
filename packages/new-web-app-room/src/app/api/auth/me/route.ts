@@ -5,6 +5,7 @@ import { getUserById } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const userId = getCurrentUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = await getUserById(userId);
+    
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Get current user error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
